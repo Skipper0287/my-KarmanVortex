@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kármán Vortex Street Simulator</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:linear-gradient(160deg,#07101e,#0a1525);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Courier New',monospace;color:#7ee8fa;padding:20px 10px;user-select:none;}
+  h1{font-size:20px;font-weight:900;letter-spacing:5px;text-transform:uppercase;
+    text-shadow:0 0 24px #7ee8fa66;margin-bottom:4px;text-align:center;}
+  .sub{font-size:10px;color:#3a6a9a;letter-spacing:2px;text-align:center;margin-bottom:14px;}
+  canvas{border-radius:10px;border:1px solid #1a3a5a;
+    box-shadow:0 0 50px #04142888,0 0 100px #020a1488;max-width:100%;}
+  .controls{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap;
+    justify-content:center;align-items:center;}
+  button{background:#0a2a40;border:1px solid #7ee8fa;color:#7ee8fa;
+    padding:8px 16px;border-radius:7px;cursor:pointer;
+    font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;transition:all .2s;}
+  button.off{background:#1a0808;border-color:#883333;color:#cc5555;}
+  .slider-box{display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:8px 16px;background:#0a1e30;border:1px solid #1a3a5a;border-radius:7px;}
+  .slider-box label{font-size:10px;letter-spacing:2px;color:#3a6a8a;}
+  input[type=range]{width:200px;accent-color:#7ee8fa;cursor:pointer;}
+  .re-val{font-weight:700;}
+  .re-ok{color:#40e080;}.re-low{color:#e07040;}.re-high{color:#e04040;}
+  .hint{font-size:9px;color:#2a4a6a;}
+  .fps-box{padding:8px 14px;background:#0a1e30;border:1px solid #1a3a5a;
+    border-radius:7px;font-size:10px;letter-spacing:2px;}
+  .footer{font-size:9px;color:#1a3a5a;margin-top:8px;letter-spacing:1px;text-align:center;}
+</style>
+</head>
+<body>
+<h1>Kármán Vortex Street Simulator</h1>
+<div class="sub">PUMP → INLET CHAMBER → TAPER → SPONGE 15mm → STRAWS ⌀4mm×28mm → TEST SECTION 100×90mm → SUMP</div>
+
+<canvas id="c" width="1200" height="580"></canvas>
+
+<div class="controls">
+  <button id="btnValve">INLET VALVE: <span id="lblValve">OPEN</span></button>
+  <button id="btnDye">DYE INJECTOR: <span id="lblDye">ON</span></button>
+  <button id="btnPump">RETURN PUMP: <span id="lblPump">RUNNING</span></button>
+  <div class="slider-box">
+    <label>Re: <span id="reVal" class="re-val re-ok">113</span>
+      <span id="reZone" style="color:#1a4a6a;margin-left:8px">(Kármán ✓)</span>
+    </label>
+    <input type="range" id="reSlider" min="10" max="300" value="113"/>
+    <div class="hint">10 ◀ shedding zone: 47–180 ▶ 300</div>
+  </div>
+  <div class="fps-box"><span style="color:#3a6a8a">FPS </span><span id="fpsVal">–</span></div>
+</div>
+
+<div class="footer">
+  Flow order: PUMP → INLET CHAMBER → TAPER (5–10°) → SPONGE (15mm) → HONEYCOMB ⌀4mm×28mm → TEST SECTION → SUMP
+</div>
+
+<script>
+// ─── LAYOUT ───────────────────────────────────────────────────────────────────
+// Correct flow order (left → right):
+//  TANK1 | INLET CHAMBER | TAPER | SPONGE | STRAWS | TEST SECTION | TANK3
+//
+const CW=1200, CH=580;
+const PHYS={nu:1.003e-6, D_m:0.010, W_m:0.100, St:0.20};
+
+// Zone x-positions (px)
+const TANK1_X=0,    TANK1_W=100;
+const INLET_X=100,  INLET_W=100;  // inlet chamber (wide, 200×180mm)
+const TAPER_X=200,  TAPER_W=85;   // bell-mouth contraction
+const SPONGE_X=285, SPONGE_W=28;  // 15mm sponge — AFTER taper
+const STRAW_X=313,  STRAW_W=62;   // ⌀4mm×28mm straws — after sponge
+const TEST_X=375,   TEST_W=455;   // 100×90mm test section
+const TANK3_X=830,  TANK3_W=370;
+
+// Heights
+const CH_TOP=190, CH_BOT=420;
+const CH_H=CH_BOT-CH_TOP, CH_MID=(CH_TOP+CH_BOT)/2;
+// Inlet chamber is taller (200mm wide → maps to extra height)
+const IN_TOP=CH_TOP-52, IN_BOT=CH_BOT+52;
+
+// Dye & cylinder inside test section
+const DYE_X =TEST_X+55;
+const CYL_X =TEST_X+105,  CYL_R=14;
+const OUTLET_X=TEST_X+TEST_W-8;
+
+// Straw cell size (4mm dia straws)
+const STRAW_D=8;
+const STRAW_CELLS=[];
+for(let y=CH_TOP+STRAW_D/2; y<CH_BOT; y+=STRAW_D)
+  for(let x=STRAW_X+STRAW_D/2; x<STRAW_X+STRAW_W; x+=STRAW_D)
+    STRAW_CELLS.push({x,y});
+
+// ─── SIMULATION STATE ─────────────────────────────────────────────────────────
+let t=0, particles=[], dye=[];
+let valveOpen=true, dyeOn=true, pumpOn=true;
+let reTarget=113, wl1=0.72, wl3=0.28;
+let fps=60, fpsCount=0, fpsLast=Date.now();
+let _pid=0;
+function mkP(x,y,color,maxAge=320,r=1.5){return{id:_pid++,x,y,vx:0,vy:0,color,age:0,maxAge,r};}
+
+// ─── KÁRMÁN VORTEX FIELD ──────────────────────────────────────────────────────
+function karmanField(px,py,U){
+  const dx=px-CYL_X, dy=py-CH_MID;
+  const r2=dx*dx+dy*dy;
+  if(r2<CYL_R*CYL_R*1.08) return{vx:0,vy:0,blocked:true};
+  const r=Math.sqrt(r2), R=CYL_R, rR2=R*R/r2;
+  const cT=dx/r, sT=dy/r;
+  let vx=U*(1-rR2*(cT*cT-sT*sT));
+  let vy=-U*rR2*2*cT*sT;
+  if(px<=CYL_X+CYL_R) return{vx,vy,blocked:false};
+  const Gamma=700, a=80, h=68, Uc=U*0.82;
+  const period=a*2, drift=(Uc*t)%period;
+  const span=OUTLET_X-CYL_X+60;
+  const NMAX=Math.ceil(span/a)+4;
+  for(let k=-1;k<=NMAX;k++){
+    const xU=CYL_X+CYL_R+14+((k*a+(period*1000-drift))%(period*1000))%span;
+    const xL=CYL_X+CYL_R+14+a*0.5+((k*a+(period*1000-drift))%(period*1000))%span;
+    const yU=CH_MID-h*0.5, yL=CH_MID+h*0.5;
+    const decU=Math.exp(-(xU-CYL_X)*0.002), decL=Math.exp(-(xL-CYL_X)*0.002);
+    if(xU>CYL_X&&xU<OUTLET_X+40){const ex=px-xU,ey=py-yU,er2=ex*ex+ey*ey+55;const g=(Gamma*decU)/(2*Math.PI*er2);vx+=-ey*g;vy+=ex*g;}
+    if(xL>CYL_X&&xL<OUTLET_X+40){const ex=px-xL,ey=py-yL,er2=ex*ex+ey*ey+55;const g=(-Gamma*decL)/(2*Math.PI*er2);vx+=-ey*g;vy+=ex*g;}
+  }
+  return{vx,vy,blocked:false};
+}
+
+function getVortexCores(U){
+  const a=80,h=68,Uc=U*0.82,period=a*2,drift=(Uc*t)%period;
+  const span=OUTLET_X-CYL_X+60, NMAX=Math.ceil(span/a)+2, cores=[];
+  for(let k=-1;k<=NMAX;k++){
+    const xU=CYL_X+CYL_R+14+((k*a+(period*1000-drift))%(period*1000))%span;
+    const xL=CYL_X+CYL_R+14+a*0.5+((k*a+(period*1000-drift))%(period*1000))%span;
+    const dU=Math.exp(-(xU-CYL_X)*0.002), dL=Math.exp(-(xL-CYL_X)*0.002);
+    if(xU>CYL_X&&xU<OUTLET_X&&dU>0.06) cores.push({x:xU,y:CH_MID-h*0.5,sign:+1,alpha:dU});
+    if(xL>CYL_X&&xL<OUTLET_X&&dL>0.06) cores.push({x:xL,y:CH_MID+h*0.5,sign:-1,alpha:dL});
+  }
+  return cores;
+}
+
+function bez(p0,p1,p2,p3,u){const v=1-u;return v*v*v*p0+3*v*v*u*p1+3*v*u*u*p2+u*u*u*p3;}
+
+// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+function loop(){
+  t++;
+  fpsCount++;
+  const now=Date.now();
+  if(now-fpsLast>600){fps=Math.round(fpsCount*1000/(now-fpsLast));fpsCount=0;fpsLast=now;document.getElementById('fpsVal').textContent=fps;}
+  if(valveOpen){wl1=Math.max(0.12,wl1-0.0004);wl3=Math.min(0.88,wl3+0.0003);}
+  if(pumpOn)   {wl3=Math.max(0.12,wl3-0.0003);wl1=Math.min(0.88,wl1+0.0003);}
+  const U=(reTarget/113)*1.1;
+
+  ctx.fillStyle="#09111d"; ctx.fillRect(0,0,CW,CH);
+
+  drawReturnPipe();
+  drawTank1();
+  drawInletChamber();
+  drawTaper();
+  drawSponge();      // ← after taper
+  drawStraws();      // ← after sponge
+  drawTestSection(U);
+  drawVortexCores(U);
+  spawnAndDraw(U);
+  drawTank3();
+  drawHUD();
+  drawFlowOrderLabel();
+
+  requestAnimationFrame(loop);
+}
+
+// ─── DRAWING ──────────────────────────────────────────────────────────────────
+
+function drawReturnPipe(){
+  ctx.save();ctx.setLineDash([10,7]);
+  ctx.strokeStyle=pumpOn?"#1a7a4a88":"#33333366";ctx.lineWidth=7;
+  ctx.beginPath();
+  ctx.moveTo(TANK3_X+TANK3_W/2,CH_BOT+22);
+  ctx.bezierCurveTo(TANK3_X+TANK3_W/2,CH-16,TANK1_X+TANK1_W/2,CH-16,TANK1_X+TANK1_W/2,CH_BOT+22);
+  ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  if(pumpOn){
+    for(let i=0;i<8;i++){
+      const p=((t*0.005+i/8)%1);
+      ctx.fillStyle="#2aaa6644";ctx.beginPath();
+      ctx.arc(bez(TANK3_X+TANK3_W/2,TANK3_X+TANK3_W/2,TANK1_X+TANK1_W/2,TANK1_X+TANK1_W/2,p),
+              bez(CH_BOT+22,CH-16,CH-16,CH_BOT+22,p),3,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.fillStyle="#1a5a3a55";ctx.font="9px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("─── RETURN LINE ───",(TANK1_X+TANK1_W/2+TANK3_X+TANK3_W/2)/2,CH_BOT+50);
+}
+
+function drawTankBase(x,w,wl,label1,label2,shimPhase){
+  const wt=68,wh=CH-128;
+  ctx.fillStyle="#0d1e30";ctx.fillRect(x+5,wt,w-10,wh);
+  ctx.strokeStyle="#2a5a80";ctx.lineWidth=2;ctx.strokeRect(x+5,wt,w-10,wh);
+  ctx.setLineDash([4,4]);ctx.strokeStyle="#3a7ab066";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+5,wt);ctx.lineTo(x+w-5,wt);ctx.stroke();ctx.setLineDash([]);
+  const top=wt+wh*(1-wl)+4;
+  const g=ctx.createLinearGradient(x,top,x,wt+wh);
+  g.addColorStop(0,"#1a6aaa66");g.addColorStop(1,"#0a3a6acc");
+  ctx.fillStyle=g;ctx.fillRect(x+6,top,w-12,wt+wh-top-2);
+  ctx.strokeStyle="#7ee8fa44";ctx.lineWidth=1;ctx.beginPath();
+  for(let i=0;i<=w-12;i+=6){const sy=top+Math.sin(t*0.04+i*0.25+shimPhase)*1.5;i===0?ctx.moveTo(x+6+i,sy):ctx.lineTo(x+6+i,sy);}ctx.stroke();
+  ctx.fillStyle="#4a8ab5";ctx.font="9px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText(`${Math.round(wl*100)}%`,x+w/2,top-5);
+  ctx.fillStyle="#3a7ab0";ctx.font="bold 10px 'Courier New'";ctx.fillText(label1,x+w/2,wt-10);
+  ctx.fillStyle="#1a4a6a";ctx.font="8px 'Courier New'";ctx.fillText(label2,x+w/2,wt+2);
+}
+
+function drawTank1(){
+  drawTankBase(TANK1_X,TANK1_W,wl1,"TANK 1","HEADER",0);
+  const vx=TANK1_X+TANK1_W-3, vy=CH_MID;
+  ctx.fillStyle=valveOpen?"#22cc66":"#cc2222";
+  ctx.beginPath();ctx.arc(vx,vy,11,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#fff3";ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle="#fff";ctx.lineWidth=2.5;ctx.beginPath();
+  if(valveOpen){ctx.moveTo(vx-7,vy);ctx.lineTo(vx+7,vy);}
+  else{ctx.moveTo(vx,vy-7);ctx.lineTo(vx,vy+7);}ctx.stroke();
+  if(valveOpen){ctx.fillStyle="#22cc6688";ctx.beginPath();ctx.moveTo(vx+14,vy-5);ctx.lineTo(vx+22,vy);ctx.lineTo(vx+14,vy+5);ctx.fill();}
+}
+
+function drawInletChamber(){
+  const x=INLET_X, w=INLET_W;
+  // Wider body
+  ctx.fillStyle="#0c1c2e";ctx.fillRect(x,IN_TOP,w,IN_BOT-IN_TOP);
+  ctx.strokeStyle="#1e4a70";ctx.lineWidth=2;ctx.strokeRect(x,IN_TOP,w,IN_BOT-IN_TOP);
+  ctx.setLineDash([5,4]);ctx.strokeStyle="#3a7ab044";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,IN_TOP);ctx.lineTo(x+w,IN_TOP);ctx.stroke();ctx.setLineDash([]);
+  const fg=ctx.createLinearGradient(x,IN_TOP,x,IN_BOT);
+  fg.addColorStop(0,"#0b2640aa");fg.addColorStop(1,"#091f33aa");
+  ctx.fillStyle=fg;ctx.fillRect(x+2,IN_TOP+2,w-4,IN_BOT-IN_TOP-4);
+  ctx.fillStyle="#2a5a7a";ctx.font="bold 9px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("INLET CHAMBER",x+w/2,IN_TOP-22);
+  ctx.fillStyle="#1a3a5a";ctx.font="8px 'Courier New'";
+  ctx.fillText("200×180mm",x+w/2,IN_TOP-12);
+}
+
+function drawTaper(){
+  const x=TAPER_X, w=TAPER_W;
+  // Fill shape
+  ctx.beginPath();
+  ctx.moveTo(x,IN_TOP);
+  ctx.bezierCurveTo(x+w*0.45,IN_TOP, x+w*0.65,CH_TOP, x+w,CH_TOP);
+  ctx.lineTo(x+w,CH_BOT);
+  ctx.bezierCurveTo(x+w*0.65,CH_BOT, x+w*0.45,IN_BOT, x,IN_BOT);
+  ctx.closePath();
+  const tg=ctx.createLinearGradient(x,0,x+w,0);
+  tg.addColorStop(0,"#0b2640bb");tg.addColorStop(1,"#0c2844bb");
+  ctx.fillStyle=tg;ctx.fill();
+  // Walls
+  ctx.strokeStyle="#2a6aaa";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(x,IN_TOP);ctx.bezierCurveTo(x+w*0.45,IN_TOP,x+w*0.65,CH_TOP,x+w,CH_TOP);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x,IN_BOT);ctx.bezierCurveTo(x+w*0.45,IN_BOT,x+w*0.65,CH_BOT,x+w,CH_BOT);ctx.stroke();
+  // Label
+  ctx.fillStyle="#4a8ab5";ctx.font="bold 8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("TAPER",x+w/2,IN_TOP-22);
+  ctx.fillStyle="#1a4a6a";ctx.font="8px 'Courier New'";
+  ctx.fillText("5°–10°",x+w/2,IN_TOP-12);
+  // Acceleration arrows
+  if(valveOpen){
+    const prog=(t*0.022)%1;
+    const arrowYs=[CH_MID-40,CH_MID,CH_MID+40];
+    for(const ay of arrowYs){
+      const ax=x+w*prog, sc=0.5+prog*0.5;
+      ctx.fillStyle=`rgba(100,200,255,${0.45*sc})`;
+      ctx.beginPath();ctx.moveTo(ax-4*sc,ay-3);ctx.lineTo(ax+7*sc,ay);ctx.lineTo(ax-4*sc,ay+3);ctx.fill();
+    }
+  }
+}
+
+function drawSponge(){
+  const x=SPONGE_X, w=SPONGE_W;
+  // Fill channel background first
+  ctx.fillStyle="#0c2844cc";ctx.fillRect(x,CH_TOP,w,CH_H);
+  // Sponge texture
+  ctx.fillStyle="#7a5010";ctx.fillRect(x,CH_TOP,w,CH_H);
+  for(let py=CH_TOP+3;py<CH_BOT;py+=5)
+    for(let px=x+2;px<x+w;px+=5){
+      const h=Math.sin(px*13.7+py*7.3)*0.5+0.5;
+      ctx.fillStyle=h>.55?"#9a681a":h>.35?"#5a380a":"#3a2008";
+      ctx.fillRect(px+(h*3)|0,py+((h*4)|0),3+(h*2|0),3);
+    }
+  ctx.strokeStyle="#c8800a";ctx.lineWidth=1.5;ctx.strokeRect(x,CH_TOP,w,CH_H);
+  // Top wall cap
+  ctx.fillStyle="#0e2033";ctx.fillRect(x,CH_TOP-4,w,6);ctx.fillRect(x,CH_BOT-2,w,6);
+  ctx.strokeStyle="#2a6aaa";ctx.lineWidth=1.5;ctx.strokeRect(x,CH_TOP-4,w,6);ctx.strokeRect(x,CH_BOT-2,w,6);
+  // Dimension bracket
+  ctx.strokeStyle="#c8800a88";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,CH_TOP-12);ctx.lineTo(x+w,CH_TOP-12);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x,CH_TOP-15);ctx.lineTo(x,CH_TOP-9);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+w,CH_TOP-15);ctx.lineTo(x+w,CH_TOP-9);ctx.stroke();
+  ctx.fillStyle="#c8800a";ctx.font="8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("15mm",x+w/2,CH_TOP-16);
+  // Rotated label
+  ctx.save();ctx.translate(x+w/2,CH_MID);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle="#c8800a";ctx.font="bold 8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("SPONGE",0,4);ctx.restore();
+}
+
+function drawStraws(){
+  const x=STRAW_X, w=STRAW_W;
+  ctx.fillStyle="#0a1e30";ctx.fillRect(x,CH_TOP,w,CH_H);
+  for(const {x:cx,y:cy} of STRAW_CELLS){
+    ctx.beginPath();ctx.arc(cx,cy,STRAW_D*0.46,0,Math.PI*2);ctx.fillStyle="#1a4a6a";ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,STRAW_D*0.32,0,Math.PI*2);ctx.fillStyle="#03090f";ctx.fill();
+    ctx.strokeStyle="#2a6a9a";ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.arc(cx,cy,STRAW_D*0.46,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.strokeStyle="#2a7ab5";ctx.lineWidth=1.5;ctx.strokeRect(x,CH_TOP,w,CH_H);
+  // Top wall cap
+  ctx.fillStyle="#0e2033";ctx.fillRect(x,CH_TOP-4,w,6);ctx.fillRect(x,CH_BOT-2,w,6);
+  ctx.strokeStyle="#2a6aaa";ctx.lineWidth=1.5;ctx.strokeRect(x,CH_TOP-4,w,6);ctx.strokeRect(x,CH_BOT-2,w,6);
+  // Dimension bracket
+  ctx.strokeStyle="#2a7ab588";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,CH_TOP-12);ctx.lineTo(x+w,CH_TOP-12);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x,CH_TOP-15);ctx.lineTo(x,CH_TOP-9);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+w,CH_TOP-15);ctx.lineTo(x+w,CH_TOP-9);ctx.stroke();
+  ctx.fillStyle="#2a7ab5";ctx.font="8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("28mm",x+w/2,CH_TOP-16);
+  ctx.save();ctx.translate(x+w/2,CH_MID);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle="#2a7ab5";ctx.font="bold 7px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("⌀4mm STRAWS",0,4);ctx.restore();
+}
+
+function drawTestSection(U){
+  const x=TEST_X, w=TEST_W;
+  // Floor and ceiling walls
+  ctx.fillStyle="#0e2033";
+  ctx.fillRect(x,CH_BOT,w,24);ctx.fillRect(x,CH_TOP-4,w,6);
+  ctx.strokeStyle="#2a6aaa";ctx.lineWidth=2;
+  ctx.strokeRect(x,CH_BOT,w,24);ctx.strokeRect(x,CH_TOP-4,w,6);
+  // Open top dashed
+  ctx.setLineDash([6,5]);ctx.strokeStyle="#3a7ab044";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,CH_TOP-20);ctx.lineTo(x+w,CH_TOP-20);ctx.stroke();ctx.setLineDash([]);
+  // Water fill
+  const fg=ctx.createLinearGradient(x,CH_TOP,x,CH_BOT);
+  fg.addColorStop(0,"#0c2a44cc");fg.addColorStop(.5,"#0e3354cc");fg.addColorStop(1,"#0a2540cc");
+  ctx.fillStyle=fg;ctx.fillRect(x,CH_TOP+2,w,CH_H-4);
+  // Surface ripple
+  ctx.strokeStyle="#7ee8fa18";ctx.lineWidth=1;ctx.beginPath();
+  for(let i=0;i<=w;i+=8){const sy=CH_TOP+4+Math.sin(t*0.03+i*0.1)*1;i===0?ctx.moveTo(x+i,sy):ctx.lineTo(x+i,sy);}ctx.stroke();
+
+  // Dye injector
+  const dcol=dyeOn?"#ff44aa":"#552233";
+  ctx.strokeStyle=dcol;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(DYE_X,CH_TOP-32);ctx.lineTo(DYE_X,CH_MID-3);ctx.stroke();
+  ctx.fillStyle=dcol;
+  ctx.beginPath();ctx.moveTo(DYE_X-5,CH_MID-3);ctx.lineTo(DYE_X+5,CH_MID-3);ctx.lineTo(DYE_X,CH_MID+5);ctx.fill();
+  if(dyeOn){ctx.fillStyle="#ff44aaaa";ctx.beginPath();ctx.arc(DYE_X,CH_MID+8,3,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle=dcol;ctx.font="bold 8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("DYE",DYE_X,CH_TOP-36);ctx.font="7px 'Courier New'";ctx.fillText("INJECT",DYE_X,CH_TOP-25);
+
+  // Cylinder wake glow
+  const wg=ctx.createRadialGradient(CYL_X+40,CH_MID,4,CYL_X+60,CH_MID,160);
+  wg.addColorStop(0,"#ffffff07");wg.addColorStop(1,"transparent");
+  ctx.fillStyle=wg;ctx.fillRect(CYL_X,CH_MID-90,340,180);
+  // Cylinder body
+  const cg=ctx.createRadialGradient(CYL_X-6,CH_MID-6,1,CYL_X,CH_MID,CYL_R);
+  cg.addColorStop(0,"#8aaac8");cg.addColorStop(.5,"#2a4a6a");cg.addColorStop(1,"#08121e");
+  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(CYL_X,CH_MID,CYL_R,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#5a9acc";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(CYL_X,CH_MID,CYL_R,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#3a6a8a";ctx.beginPath();ctx.arc(CYL_X,CH_MID,2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#4a8aaa";ctx.font="9px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText("D=10mm",CYL_X,CH_BOT+14);
+  ctx.fillStyle="#2a5a7a";ctx.font="8px 'Courier New'";ctx.fillText("(10% W)",CYL_X,CH_BOT+25);
+
+  // Outlet weir
+  ctx.fillStyle="#1e4a6a";ctx.fillRect(OUTLET_X-4,CH_TOP,8,CH_H);
+  ctx.strokeStyle="#3a7ab0";ctx.lineWidth=1.5;ctx.strokeRect(OUTLET_X-4,CH_TOP,8,CH_H);
+
+  // Labels
+  const Ucms=(PHYS.nu*reTarget/PHYS.D_m*100).toFixed(3);
+  const fShed=(PHYS.St*(+Ucms/100)/PHYS.D_m).toFixed(3);
+  const rCol=reTarget<47?"#e07040":reTarget<=180?"#40e080":"#e04040";
+  ctx.fillStyle=rCol;ctx.font="bold 11px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText(`Re = ${reTarget}`,x+w/2,CH_TOP-8);
+  ctx.fillStyle="#2a5a7a";ctx.font="9px 'Courier New'";
+  ctx.fillText(`U=${Ucms} cm/s  ·  f_shed=${fShed} Hz  ·  D=10mm  ·  100×90mm`,x+w/2,CH_BOT+40);
+  ctx.fillStyle="#2a5a7a";ctx.font="bold 10px 'Courier New'";
+  ctx.fillText("TEST SECTION — 100×90mm (open lid, acrylic)",x+w/2,CH_TOP-20);
+}
+
+function drawVortexCores(U){
+  if(!valveOpen)return;
+  const cores=getVortexCores(U);
+  for(const c of cores){
+    if(c.x<CYL_X+CYL_R+5)continue;
+    const a=c.alpha, rad=9*a+3, rot=t*0.07*c.sign;
+    ctx.strokeStyle=c.sign>0?`rgba(80,200,255,${a*0.3})`:`rgba(255,120,80,${a*0.3})`;
+    ctx.lineWidth=1;ctx.beginPath();ctx.arc(c.x,c.y,rad,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=c.sign>0?`rgba(80,200,255,${a*0.6})`:`rgba(255,120,80,${a*0.6})`;
+    ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(c.x,c.y,rad*0.65,rot,rot+Math.PI*1.5);ctx.stroke();
+    const ta=rot+Math.PI*1.5;
+    const tx=c.x+Math.cos(ta)*rad*0.65, ty=c.y+Math.sin(ta)*rad*0.65;
+    const ha=ta+(c.sign>0?Math.PI/2:-Math.PI/2);
+    ctx.fillStyle=c.sign>0?`rgba(80,200,255,${a*0.6})`:`rgba(255,120,80,${a*0.6})`;
+    ctx.beginPath();ctx.moveTo(tx,ty);
+    ctx.lineTo(tx+Math.cos(ha-2.4)*4,ty+Math.sin(ha-2.4)*4);
+    ctx.lineTo(tx+Math.cos(ha+2.4)*4,ty+Math.sin(ha+2.4)*4);
+    ctx.fill();
+  }
+}
+
+function spawnAndDraw(U){
+  if(!valveOpen){particles=[];dye=[];return;}
+  // Spawn streamlines at entry to test section
+  if(t%3===0){
+    const N=12;
+    for(let i=0;i<N;i++){
+      const y=CH_TOP+5+(i/(N-1))*(CH_H-10);
+      particles.push(mkP(TEST_X+4,y,`hsl(${195+i*6},60%,55%)`,320,1.3));
+    }
+  }
+  // Dye ribbon
+  if(dyeOn&&t%1===0){
+    for(let k=0;k<5;k++){
+      const p=mkP(DYE_X+3,CH_MID+(k-2)*1.4,null,480,2.1);
+      p.color=`hsla(${328+k*5},100%,60%,0.95)`;
+      dye.push(p);
+    }
+  }
+  // Streamlines
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];p.age++;
+    const f=karmanField(p.x,p.y,U);
+    if(f.blocked){particles.splice(i,1);continue;}
+    p.vx=f.vx*0.58+p.vx*0.42;p.vy=f.vy*0.58+p.vy*0.42;
+    p.x+=p.vx;p.y+=p.vy;
+    p.y=Math.max(CH_TOP+2,Math.min(CH_BOT-2,p.y));
+    if(p.x>OUTLET_X||p.age>p.maxAge){particles.splice(i,1);continue;}
+    const al=(1-p.age/p.maxAge)*0.65;
+    ctx.fillStyle=p.color.replace("hsl(","hsla(").replace(")",`,${al})`);
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+  }
+  if(particles.length>900)particles.splice(0,80);
+  // Dye
+  for(let i=dye.length-1;i>=0;i--){
+    const p=dye[i];p.age++;
+    const f=karmanField(p.x,p.y,U);
+    if(f.blocked){dye.splice(i,1);continue;}
+    p.vx=f.vx*0.48+p.vx*0.52;p.vy=f.vy*0.48+p.vy*0.52;
+    p.x+=p.vx;p.y+=p.vy;
+    p.y=Math.max(CH_TOP+2,Math.min(CH_BOT-2,p.y));
+    if(p.x>OUTLET_X||p.age>p.maxAge){dye.splice(i,1);continue;}
+    const al=(1-p.age/p.maxAge)*0.92;
+    ctx.fillStyle=p.color.replace("0.95)",`${al})`);
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+  }
+  if(dye.length>1400)dye.splice(0,100);
+}
+
+function drawTank3(){
+  drawTankBase(TANK3_X,TANK3_W,wl3,"TANK 3","SUMP + PUMP",2);
+  const pcx=TANK3_X+TANK3_W/2, pcy=68+(CH-128)-32;
+  const pCol=pumpOn?"#22cc66":"#444";
+  const ang=pumpOn?(t*0.07)%(Math.PI*2):0;
+  ctx.strokeStyle=pCol;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(pcx,pcy,20,0,Math.PI*2);ctx.stroke();
+  for(let i=0;i<4;i++){
+    const a=ang+i*Math.PI/2;ctx.strokeStyle=pCol;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(pcx+Math.cos(a)*5,pcy+Math.sin(a)*5);
+    ctx.lineTo(pcx+Math.cos(a)*17,pcy+Math.sin(a)*17);ctx.stroke();
+  }
+  ctx.fillStyle=pCol;ctx.font="8px 'Courier New'";ctx.textAlign="center";
+  ctx.fillText(pumpOn?"PUMP ▶":"PUMP ■",pcx,pcy+34);
+}
+
+function drawHUD(){
+  const re=reTarget;
+  const zone=re<47?"Creeping — no shedding":re<=180?"✓ Laminar Kármán shedding":"Turbulent wake";
+  const zCol=re<47?"#e08040":re<=180?"#40e080":"#e04040";
+  ctx.fillStyle="#0a1825";ctx.fillRect(12,10,300,106);
+  ctx.strokeStyle="#1e3a5a";ctx.lineWidth=1;ctx.strokeRect(12,10,300,106);
+  ctx.fillStyle=zCol;ctx.font="bold 10px 'Courier New'";ctx.textAlign="left";ctx.fillText(zone,20,28);
+  ctx.fillStyle="#2a5a7a";ctx.font="9px 'Courier New'";
+  ctx.fillText(`Re=U·D/ν=${re}  |  D=10mm  |  Blockage 10%`,20,42);
+  ctx.fillText(`Sponge 15mm (20-30PPI open foam)`,20,55);
+  ctx.fillText(`Straws ⌀4mm×28mm  (L/d=7)`,20,68);
+  ctx.fillText(`Taper half-angle 5°–10° (bell-mouth)`,20,81);
+  ctx.strokeStyle="rgba(80,200,255,0.55)";ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(22,93,5,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="rgba(80,200,255,0.7)";ctx.font="8px 'Courier New'";ctx.fillText("CCW upper (Γ>0)",32,96);
+  ctx.strokeStyle="rgba(255,120,80,0.55)";ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(22,107,5,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="rgba(255,120,80,0.7)";ctx.fillText("CW  lower (Γ<0)",32,110);
+  ctx.fillStyle="#2a5a7a";ctx.font="8px 'Courier New'";ctx.fillText(`FPS:${fps}`,250,110);
+  // Scale bar
+  ctx.strokeStyle="#2a5a7a";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(CW-80,CH-20);ctx.lineTo(CW-20,CH-20);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(CW-80,CH-25);ctx.lineTo(CW-80,CH-15);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(CW-20,CH-25);ctx.lineTo(CW-20,CH-15);ctx.stroke();
+  ctx.fillStyle="#2a5a7a";ctx.font="8px 'Courier New'";ctx.textAlign="center";ctx.fillText("100mm",CW-50,CH-8);
+}
+
+// Numbered flow-order labels below each zone
+function drawFlowOrderLabel(){
+  const zones=[
+    {x:TANK1_X,  w:TANK1_W,  n:"①",label:"HEADER\nTANK"},
+    {x:INLET_X,  w:INLET_W,  n:"②",label:"INLET\nCHAMBER"},
+    {x:TAPER_X,  w:TAPER_W,  n:"③",label:"TAPER\n5–10°"},
+    {x:SPONGE_X, w:SPONGE_W, n:"④",label:"SPONGE\n15mm"},
+    {x:STRAW_X,  w:STRAW_W,  n:"⑤",label:"STRAWS\n⌀4×28mm"},
+    {x:TEST_X,   w:TEST_W,   n:"⑥",label:"TEST\nSECTION"},
+    {x:TANK3_X,  w:TANK3_W,  n:"⑦",label:"SUMP\n+PUMP"},
+  ];
+  for(const z of zones){
+    ctx.fillStyle="#1a3a5a";ctx.font="bold 11px 'Courier New'";ctx.textAlign="center";
+    ctx.fillText(z.n,z.x+z.w/2,CH_BOT+62);
+    ctx.fillStyle="#132a40";ctx.font="8px 'Courier New'";
+    const lines=z.label.split("\n");
+    lines.forEach((l,i)=>ctx.fillText(l,z.x+z.w/2,CH_BOT+74+i*10));
+  }
+  // Arrows between zones
+  ctx.fillStyle="#1a3a5a";ctx.font="10px 'Courier New'";
+  const gaps=[TANK1_X+TANK1_W,INLET_X+INLET_W,TAPER_X+TAPER_W,SPONGE_X+SPONGE_W,STRAW_X+STRAW_W,TEST_X+TEST_W];
+  const nexts=[INLET_X,TAPER_X,SPONGE_X,STRAW_X,TEST_X,TANK3_X];
+  for(let i=0;i<gaps.length;i++){
+    const mx=(gaps[i]+nexts[i])/2;
+    ctx.fillText("→",mx,CH_BOT+62);
+  }
+}
+
+// ─── UI ───────────────────────────────────────────────────────────────────────
+function updateReUI(val){
+  const el=document.getElementById('reVal');
+  const zone=document.getElementById('reZone');
+  el.textContent=val;
+  el.className='re-val '+(val<47?'re-low':val<=180?'re-ok':'re-high');
+  zone.textContent=val<47?'(no shedding)':val<=180?'(Kármán ✓)':'(turbulent)';
+}
+document.getElementById('btnValve').addEventListener('click',function(){
+  valveOpen=!valveOpen;this.className=valveOpen?'':'off';
+  document.getElementById('lblValve').textContent=valveOpen?'OPEN':'CLOSED';
+});
+document.getElementById('btnDye').addEventListener('click',function(){
+  dyeOn=!dyeOn;this.className=dyeOn?'':'off';
+  document.getElementById('lblDye').textContent=dyeOn?'ON':'OFF';
+});
+document.getElementById('btnPump').addEventListener('click',function(){
+  pumpOn=!pumpOn;this.className=pumpOn?'':'off';
+  document.getElementById('lblPump').textContent=pumpOn?'RUNNING':'STOPPED';
+});
+document.getElementById('reSlider').addEventListener('input',function(){
+  reTarget=+this.value;updateReUI(reTarget);
+});
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

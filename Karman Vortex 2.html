@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>カルマン渦研究プロジェクト</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+body{
+font-family:"Yu Gothic",sans-serif;
+background:#f4f8fc;
+color:#222;
+line-height:1.8;
+}
+
+header{
+height:100vh;
+background:
+linear-gradient(rgba(0,20,60,0.65),rgba(0,20,60,0.65)),
+url("Background Uzu.jpg");
+background-size:cover;
+background-position:center;
+display:flex;
+justify-content:center;
+align-items:center;
+text-align:center;
+color:white;
+}
+
+.hero h1{
+font-size:80px;
+margin-bottom:20px;
+}
+
+.hero p{
+font-size:24px;
+margin-bottom:20px;
+}
+
+.btn{
+display:inline-block;
+padding:15px 30px;
+background:#4da6ff;
+color:white;
+text-decoration:none;
+border-radius:30px;
+font-weight:bold;
+transition:0.3s;
+}
+
+.btn:hover{
+background:#258cff;
+}
+
+nav{
+background:#002f6c;
+padding:15px;
+position:sticky;
+top:0;
+z-index:1000;
+text-align:center;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+margin:0 15px;
+font-weight:bold;
+}
+
+section{
+max-width:1200px;
+margin:auto;
+padding:80px 30px;
+}
+
+h2{
+color:#002f6c;
+margin-bottom:20px;
+border-left:6px solid #4da6ff;
+padding-left:10px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 2px 15px rgba(0,0,0,0.15);
+margin-top:20px;
+}
+
+.center-content{
+text-align:center;
+}
+
+/* Poster */
+.poster-img{
+width:100%;
+max-width:400px;
+height:auto;
+display:block;
+margin:auto;
+border-radius:15px;
+box-shadow:0 3px 12px rgba(0,0,0,0.2);
+}
+
+/* Simulation */
+iframe{
+width:100%;
+max-width:700px;
+height:400px;
+display:block;
+margin:auto;
+border:none;
+border-radius:15px;
+}
+
+/* Video */
+.video-player{
+width:100%;
+max-width:500px;
+height:auto;
+display:block;
+margin:auto;
+border-radius:15px;
+}
+
+/* Gallery */
+.gallery{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:20px;
+}
+
+.gallery img{
+width:320px;
+border-radius:15px;
+box-shadow:0 3px 12px rgba(0,0,0,0.2);
+}
+
+/* Table */
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+padding:12px;
+text-align:center;
+border:1px solid #ccc;
+}
+
+th{
+background:#eaf3ff;
+}
+
+footer{
+background:#002f6c;
+color:white;
+text-align:center;
+padding:40px;
+margin-top:50px;
+}
+
+/* Mobile */
+@media(max-width:768px){
+
+.hero h1{
+font-size:50px;
+}
+
+.hero p{
+font-size:18px;
+}
+
+nav a{
+display:inline-block;
+margin:8px;
+}
+
+iframe{
+height:400px;
+}
+
+.gallery img{
+width:100%;
+max-width:350px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="hero">
+<h1>カルマン渦</h1>
+<p>Kármán Vortex Research Project</p>
+<p>Open Campus 2026</p>
+
+<a href="#about" class="btn">
+研究を見る
+</a>
+
+</div>
+</header>
+
+<nav>
+<a href="#about">概要</a>
+<a href="#poster">ポスター</a>
+<a href="#setup">実験装置</a>
+<a href="#simulation">シミュレーション</a>
+<a href="#video">実験動画</a>
+<a href="#results">結果</a>
+<a href="#gallery">写真</a>
+</nav>
+
+<section id="about">
+
+<h2>研究概要</h2>
+
+<div class="card">
+<p>
+カルマン渦とは、流体が円柱などの障害物を通過する際に交互に発生する渦列現象である。
+
+本研究ではレイノルズ装置と円柱モデルを用いてカルマン渦の発生を可視化し、流速との関係について調査した。
+</p>
+</div>
+
+</section>
+
+<section id="poster">
+
+<h2>研究ポスター</h2>
+
+<div class="card center-content">
+
+<img src="Poster.png" class="poster-img" alt="Research Poster">
+
+</div>
+
+</section>
+
+<section id="setup">
+
+<h2>実験装置</h2>
+
+<div class="card">
+
+<h3>使用機器</h3>
+
+<ul>
+<li>アクリルケース (Acrylic Case)</li>
+<li>ポンプ (Pump)</li>
+<li>ホース (Hose)</li>
+<li>ホースニップル (Hose Nipple)</li>
+<li>ハニカムストロー (Honeycomb Straw)</li>
+<li>スポンジ (Sponge)</li>
+<li>円柱モデル (Cylinder Rod)</li>
+</ul>
+
+<br>
+
+<h3>実験目的</h3>
+
+<p>
+本研究では、レイノルズ装置と円柱モデルを用いてカルマン渦を可視化し、流体が障害物を通過する際に発生する渦列現象の特徴を観察・理解することを目的とする。
+</p>
+
+</div>
+
+</section>
+
+<section id="simulation">
+
+<h2>カルマン渦シミュレーション</h2>
+
+<div class="card center-content">
+
+<p>
+レイノルズ装置を再現したインタラクティブシミュレーション。
+</p>
+
+<br>
+
+<iframe src="simulation.html"></iframe>
+
+</div>
+
+</section>
+
+<section id="video">
+
+<h2>実験動画</h2>
+
+<div class="card center-content">
+
+<video controls class="video-player">
+<source src="Video Karman.mov" type="video/mp4">
+</video>
+
+</div>
+
+</section>
+<section id="results">
+
+<h2>実験結果</h2>
+
+<div class="card">
+
+<table>
+
+<tr>
+<th>流速</th>
+<th>観察結果</th>
+</tr>
+
+<tr>
+<td>低流速</td>
+<td>渦の発生なし</td>
+</tr>
+
+<tr>
+<td>中流速</td>
+<td>カルマン渦を確認</td>
+</tr>
+
+<tr>
+<td>高流速</td>
+<td>明確な渦列を形成</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+<section id="gallery">
+
+<h2>実験写真</h2>
+
+<div class="gallery">
+<img src="setup.jpg">
+<img src="vortex1.jpg">
+<img src="vortex2.jpg">
+</div>
+
+</section>
+
+<section id="conclusion">
+
+<h2>まとめ</h2>
+
+<div class="card">
+
+<p>
+本研究ではレイノルズ装置と円柱モデルを用いてカルマン渦の発生を観察した。
+
+実験およびシミュレーションを通じて、流体が障害物を通過する際に発生する渦の特徴を理解することができた。
+
+また、カルマン渦は橋梁や煙突、送電線など様々な工学分野で重要な現象であることを確認した。
+</p>
+
+</div>
+
+</section>
+
+<footer>
+<h3>カルマン渦研究プロジェクト</h3>
+<p>Open Campus 2026</p>
+</footer>
+
+</body>
+</html>
