@@ -1,216 +1,755 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>カルマン渦研究プロジェクト</title>
 
+
 <style>
 
+/* ==================================================
+   全体設定
+================================================== */
+
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
 html{
-scroll-behavior:smooth;
+    scroll-behavior:smooth;
 }
 
 body{
-font-family:"Yu Gothic",sans-serif;
-background:#f4f8fc;
-color:#222;
-line-height:1.8;
+    font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;
+
+    background:#f4f8fc;
+
+    color:#222;
+
+    line-height:1.9;
 }
 
+
+/* ==================================================
+   HEADER
+================================================== */
+
 header{
-height:100vh;
-background:
-linear-gradient(rgba(0,20,60,0.65),rgba(0,20,60,0.65)),
-url("Background Uzu.jpg");
-background-size:cover;
-background-position:center;
-display:flex;
-justify-content:center;
-align-items:center;
-text-align:center;
-color:white;
+
+    height:100vh;
+
+    background:
+        linear-gradient(
+            rgba(0,20,60,0.65),
+            rgba(0,20,60,0.65)
+        ),
+        url("Karman Background.jpg");
+
+    background-size:cover;
+
+    background-position:center;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    color:white;
 }
 
 .hero h1{
-font-size:80px;
-margin-bottom:20px;
+
+    font-size:80px;
+
+    margin-bottom:20px;
 }
 
 .hero p{
-font-size:24px;
-margin-bottom:20px;
+
+    font-size:24px;
+
+    margin-bottom:20px;
 }
 
+
+/* ==================================================
+   BUTTON
+================================================== */
+
 .btn{
-display:inline-block;
-padding:15px 30px;
-background:#4da6ff;
-color:white;
-text-decoration:none;
-border-radius:30px;
-font-weight:bold;
-transition:0.3s;
+
+    display:inline-block;
+
+    padding:15px 30px;
+
+    background:#4da6ff;
+
+    color:white;
+
+    text-decoration:none;
+
+    border-radius:30px;
+
+    font-weight:bold;
+
+    transition:0.3s;
 }
 
 .btn:hover{
-background:#258cff;
+
+    background:#258cff;
+
+    transform:translateY(-2px);
 }
 
+
+/* ==================================================
+   NAVIGATION
+================================================== */
+
 nav{
-background:#002f6c;
-padding:15px;
-position:sticky;
-top:0;
-z-index:1000;
-text-align:center;
+
+    background:#002f6c;
+
+    padding:15px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:1000;
+
+    text-align:center;
 }
 
 nav a{
-color:white;
-text-decoration:none;
-margin:0 15px;
-font-weight:bold;
+
+    color:white;
+
+    text-decoration:none;
+
+    margin:0 15px;
+
+    font-weight:bold;
+
+    transition:0.3s;
 }
 
+nav a:hover{
+
+    color:#8dccff;
+}
+
+
+/* ==================================================
+   SECTION
+================================================== */
+
 section{
-max-width:1200px;
-margin:auto;
-padding:80px 30px;
+
+    max-width:1200px;
+
+    margin:auto;
+
+    padding:80px 30px;
 }
 
 h2{
-color:#002f6c;
-margin-bottom:20px;
-border-left:6px solid #4da6ff;
-padding-left:10px;
+
+    color:#002f6c;
+
+    margin-bottom:25px;
+
+    border-left:6px solid #4da6ff;
+
+    padding-left:12px;
+
+    font-size:32px;
 }
 
+h3{
+
+    color:#003d80;
+
+    margin-top:25px;
+
+    margin-bottom:12px;
+
+    font-size:24px;
+}
+
+h4{
+
+    color:#004c99;
+
+    margin-top:20px;
+
+    margin-bottom:10px;
+
+    font-size:20px;
+}
+
+
+/* ==================================================
+   CARD
+================================================== */
+
 .card{
-background:white;
-padding:25px;
-border-radius:15px;
-box-shadow:0 2px 15px rgba(0,0,0,0.15);
-margin-top:20px;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    box-shadow:0 2px 15px rgba(0,0,0,0.15);
+
+    margin-top:20px;
 }
 
 .center-content{
-text-align:center;
+
+    text-align:center;
 }
 
-/* Poster */
+
+/* ==================================================
+   FORMULA
+================================================== */
+
+.formula{
+
+    background:#f0f6ff;
+
+    border-left:5px solid #4da6ff;
+
+    padding:18px;
+
+    margin:20px 0;
+
+    text-align:center;
+
+    font-size:22px;
+
+    font-family:"Times New Roman",serif;
+
+    border-radius:8px;
+}
+
+
+/* ==================================================
+   HIGHLIGHT
+================================================== */
+
+.highlight{
+
+    background:#eaf5ff;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    margin:20px 0;
+
+    font-weight:bold;
+}
+
+
+/* ==================================================
+   TERM
+================================================== */
+
+.term{
+
+    background:#f8fbff;
+
+    border:1px solid #d8e8f8;
+
+    padding:15px 20px;
+
+    margin:12px 0;
+
+    border-radius:8px;
+}
+
+.term strong{
+
+    color:#003d80;
+}
+
+
+/* ==================================================
+   POSTER
+================================================== */
+
 .poster-img{
-width:100%;
-max-width:400px;
-height:auto;
-display:block;
-margin:auto;
-border-radius:15px;
-box-shadow:0 3px 12px rgba(0,0,0,0.2);
+
+    width:100%;
+
+    max-width:500px;
+
+    height:auto;
+
+    display:block;
+
+    margin:auto;
+
+    border-radius:15px;
+
+    box-shadow:0 3px 12px rgba(0,0,0,0.2);
 }
 
-/* Simulation */
-iframe{
-width:100%;
-max-width:700px;
-height:400px;
-display:block;
-margin:auto;
-border:none;
-border-radius:15px;
+
+/* ==================================================
+   EXPERIMENT PLAN
+================================================== */
+
+.plan-container{
+
+    text-align:center;
+
+    margin-top:20px;
 }
 
-/* Video */
+.plan-img{
+
+    width:100%;
+
+    max-width:900px;
+
+    height:auto;
+
+    display:block;
+
+    margin:25px auto;
+
+    border-radius:15px;
+
+    box-shadow:0 3px 15px rgba(0,0,0,0.2);
+
+    border:1px solid #d8e8f8;
+}
+
+.plan-caption{
+
+    text-align:center;
+
+    color:#666;
+
+    font-size:14px;
+
+    margin-top:10px;
+}
+
+
+/* ==================================================
+   APPARATUS SECTION
+================================================== */
+
+.apparatus-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:25px;
+
+    margin-top:30px;
+}
+
+
+/* ==================================================
+   INDIVIDUAL APPARATUS
+================================================== */
+
+.apparatus-card{
+
+    display:grid;
+
+    grid-template-columns:300px 1fr;
+
+    gap:30px;
+
+    background:#f8fbff;
+
+    border:1px solid #d8e8f8;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+}
+
+.apparatus-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 5px 15px rgba(0,0,0,0.12);
+}
+
+
+/* ==================================================
+   APPARATUS IMAGE
+================================================== */
+
+.apparatus-image{
+
+    width:100%;
+
+    height:200px;
+
+    object-fit:cover;
+
+    border-radius:10px;
+
+    background:#e4edf7;
+
+    border:1px solid #d8e8f8;
+}
+
+
+/* ==================================================
+   APPARATUS TEXT
+================================================== */
+
+.apparatus-info h3{
+
+    margin-top:0;
+
+    margin-bottom:12px;
+
+    color:#003d80;
+
+    border-left:5px solid #4da6ff;
+
+    padding-left:12px;
+}
+
+.apparatus-info p{
+
+    margin-bottom:10px;
+}
+
+.apparatus-purpose{
+
+    background:white;
+
+    border-radius:8px;
+
+    padding:12px 15px;
+
+    margin-top:12px;
+
+    border-left:4px solid #4da6ff;
+}
+
+.apparatus-purpose strong{
+
+    color:#003d80;
+}
+
+
+/* ==================================================
+   FLOW SYSTEM
+================================================== */
+
+.flow-system{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin:30px 0;
+}
+
+.flow-box{
+
+    background:#eaf5ff;
+
+    border:2px solid #9ccfff;
+
+    padding:15px 20px;
+
+    border-radius:10px;
+
+    font-weight:bold;
+
+    color:#003d80;
+}
+
+.flow-arrow{
+
+    font-size:25px;
+
+    color:#4da6ff;
+
+    font-weight:bold;
+}
+
+
+/* ==================================================
+   METHOD STEPS
+================================================== */
+
+.method-steps{
+
+    counter-reset:step;
+
+    list-style:none;
+
+    margin-top:20px;
+
+    padding:0;
+}
+
+.method-steps li{
+
+    counter-increment:step;
+
+    position:relative;
+
+    background:#f8fbff;
+
+    border:1px solid #d8e8f8;
+
+    border-radius:10px;
+
+    padding:16px 20px 16px 60px;
+
+    margin-bottom:14px;
+}
+
+.method-steps li::before{
+
+    content:counter(step);
+
+    position:absolute;
+
+    left:16px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    width:30px;
+
+    height:30px;
+
+    border-radius:50%;
+
+    background:#4da6ff;
+
+    color:white;
+
+    font-weight:bold;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+}
+
+
+/* ==================================================
+   VIDEO
+================================================== */
+
 .video-player{
-width:100%;
-max-width:500px;
-height:auto;
-display:block;
-margin:auto;
-border-radius:15px;
+
+    width:100%;
+
+    max-width:700px;
+
+    height:auto;
+
+    display:block;
+
+    margin:auto;
+
+    border-radius:15px;
 }
 
-/* Gallery */
+
+/* ==================================================
+   RESULT
+================================================== */
+
+.result-box{
+
+    min-height:180px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    background:#f8fbff;
+
+    border:2px dashed #9ccfff;
+
+    border-radius:12px;
+
+    color:#666;
+}
+
+
+/* ==================================================
+   GALLERY
+================================================== */
+
 .gallery{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:20px;
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    justify-content:center;
+
+    gap:20px;
 }
 
 .gallery img{
-width:320px;
-border-radius:15px;
-box-shadow:0 3px 12px rgba(0,0,0,0.2);
+
+    width:320px;
+
+    border-radius:15px;
+
+    box-shadow:0 3px 12px rgba(0,0,0,0.2);
 }
 
-/* Table */
-table{
-width:100%;
-border-collapse:collapse;
-}
 
-th,td{
-padding:12px;
-text-align:center;
-border:1px solid #ccc;
-}
-
-th{
-background:#eaf3ff;
-}
+/* ==================================================
+   FOOTER
+================================================== */
 
 footer{
-background:#002f6c;
-color:white;
-text-align:center;
-padding:40px;
-margin-top:50px;
+
+    background:#002f6c;
+
+    color:white;
+
+    text-align:center;
+
+    padding:40px;
+
+    margin-top:50px;
 }
 
-/* Mobile */
+footer h3{
+
+    color:white;
+
+    margin-top:0;
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
 @media(max-width:768px){
 
-.hero h1{
-font-size:50px;
-}
+    .hero h1{
 
-.hero p{
-font-size:18px;
-}
+        font-size:50px;
+    }
 
-nav a{
-display:inline-block;
-margin:8px;
-}
+    .hero p{
 
-iframe{
-height:400px;
-}
+        font-size:18px;
+    }
 
-.gallery img{
-width:100%;
-max-width:350px;
-}
+    nav a{
+
+        display:inline-block;
+
+        margin:7px;
+    }
+
+    section{
+
+        padding:60px 20px;
+    }
+
+    h2{
+
+        font-size:27px;
+    }
+
+    .apparatus-card{
+
+        grid-template-columns:1fr;
+
+        gap:20px;
+    }
+
+    .apparatus-image{
+
+        height:220px;
+    }
+
+    .flow-system{
+
+        flex-direction:column;
+    }
+
+    .flow-arrow{
+
+        transform:rotate(90deg);
+    }
+
+    .gallery img{
+
+        width:100%;
+
+        max-width:350px;
+    }
 
 }
 
 </style>
+
 </head>
+
 
 <body>
 
+
+<!-- ==================================================
+     HEADER
+================================================== -->
+
 <header>
+
 <div class="hero">
+
 <h1>カルマン渦</h1>
+
 <p>Kármán Vortex Research Project</p>
+
 <p>Open Campus 2026</p>
 
 <a href="#about" class="btn">
@@ -218,31 +757,132 @@ max-width:350px;
 </a>
 
 </div>
+
 </header>
 
+
+<!-- ==================================================
+     NAVIGATION
+================================================== -->
+
 <nav>
+
 <a href="#about">概要</a>
-<a href="#poster">ポスター</a>
+
+<a href="#principle">作動原理</a>
+
 <a href="#setup">実験装置</a>
-<a href="#simulation">シミュレーション</a>
+
+<a href="#method">実験方法</a>
+
 <a href="#video">実験動画</a>
+
 <a href="#results">結果</a>
+
 <a href="#gallery">写真</a>
+
 </nav>
+
+
+<!-- ==================================================
+     ① 概要
+================================================== -->
 
 <section id="about">
 
-<h2>研究概要</h2>
+<h2>① 概要</h2>
 
 <div class="card">
-<p>
-カルマン渦とは、流体が円柱などの障害物を通過する際に交互に発生する渦列現象である。
 
-本研究ではレイノルズ装置と円柱モデルを用いてカルマン渦の発生を可視化し、流速との関係について調査した。
+<h3>カルマン渦</h3>
+
+<p>
+
+水の流れの中に円柱を置くと、円柱の表面に沿っていた流れが
+途中ではがれる「剥離」が起こります。
+
+剥離した流れは円柱の後ろで不安定になり、
+左右の流れが互いに影響し合うことで、
+左右交互に渦を放出する周期的な流れが形成されます。
+
+これが<strong>カルマン渦</strong>です。
+
 </p>
+
+
+<div class="highlight">
+
+ここで重要なのは、カルマン渦が
+「最初から左右交互に渦を作ろうとしている」わけではないことです。
+
+流れが不安定になることで小さな揺らぎが増幅され、
+最終的に<strong>一定の周期で渦を放出する状態に自然と落ち着きます。</strong>
+
+</div>
+
+
+<h3>なぜ渦は交互に並ぶのか</h3>
+
+<p>
+
+カルマン渦の特徴は、渦が左右交互に並ぶことです。
+
+これは偶然ではありません。
+
+円柱の後方では流れが不安定になることで、
+左右の渦が交互に放出される規則的な渦列が形成されます。
+
+</p>
+
+
+<div class="highlight">
+
+「乱れから規則性が生まれる」という点が、
+カルマン渦の特に興味深いところです。
+
+</div>
+
+
+<h3>カルマン渦を数値で捉える</h3>
+
+<p>
+
+カルマン渦の発生には
+<strong>レイノルズ数（Re）</strong>が関係します。
+
+レイノルズ数は、流れにおける
+<strong>慣性の影響と粘性の影響の強さを比較する指標</strong>です。
+
+</p>
+
+
+<p>
+
+また、渦が放出される周期は
+<strong>ストローハル数（St）</strong>で表すことができます。
+
+円柱まわりの流れでは、
+比較的広いレイノルズ数の範囲で
+Stはおよそ0.2となります。
+
+</p>
+
+
+<div class="highlight">
+
+今回の実験では、この規則性を実際に可視化することで、
+目に見えない流体の運動を観察します。
+
+</div>
+
 </div>
 
 </section>
+
+
+<!-- ==================================================
+     RESEARCH POSTER
+================================================== -->
 
 <section id="poster">
 
@@ -250,141 +890,1102 @@ max-width:350px;
 
 <div class="card center-content">
 
-<img src="Poster.png" class="poster-img" alt="Research Poster">
+<img
+src="Karman Vortex poster.png"
+class="poster-img"
+alt="研究ポスター">
 
 </div>
 
 </section>
 
-<section id="setup">
 
-<h2>実験装置</h2>
+<!-- ==================================================
+     ② 作動原理
+================================================== -->
+
+<section id="principle">
+
+<h2>② 作動原理</h2>
 
 <div class="card">
 
-<h3>使用機器</h3>
 
-<ul>
-<li>アクリルケース (Acrylic Case)</li>
-<li>ポンプ (Pump)</li>
-<li>ホース (Hose)</li>
-<li>ホースニップル (Hose Nipple)</li>
-<li>ハニカムストロー (Honeycomb Straw)</li>
-<li>スポンジ (Sponge)</li>
-<li>円柱モデル (Cylinder Rod)</li>
-</ul>
-
-<br>
-
-<h3>実験目的</h3>
+<h3>レイノルズ数とカルマン渦</h3>
 
 <p>
-本研究では、レイノルズ装置と円柱モデルを用いてカルマン渦を可視化し、流体が障害物を通過する際に発生する渦列現象の特徴を観察・理解することを目的とする。
+
+渦の発生するレイノルズ数は、
+双子渦が約30、層流カルマン渦が30～300、
+乱流カルマン渦が300以上とされています。
+
 </p>
+
+
+<div class="term">
+
+<strong>双子渦：</strong>
+
+円柱などの物体を流体がゆっくり流れるときに、
+物体の後方に左右一対でできる、
+互いに逆向きに回転する渦。
+
+</div>
+
+
+<div class="term">
+
+<strong>層流：</strong>
+
+流体が比較的規則正しく、
+層状に滑らかに流れる状態。
+
+</div>
+
+
+<div class="term">
+
+<strong>乱流：</strong>
+
+流れの速度や方向が時間的・空間的に
+不規則に変化する状態。
+
+</div>
+
+
+<h3>レイノルズ数（Re）</h3>
+
+<p>
+
+レイノルズ数 Re とは、
+流体の流れにおいて
+<strong>慣性力と粘性力の比</strong>を表す無次元数です。
+
+今回の場合、流速 U、円柱直径 d、
+動粘性係数 ν より、次式で表されます。
+
+</p>
+
+
+<div class="formula">
+
+Re = Ud / ν
+
+</div>
+
+
+<p>
+
+流体は常温の水なので、
+<strong>ν = 1.0 × 10<sup>-6</sup> m²/s</strong>
+とし、円柱直径
+<strong>d = 10 mm = 0.01 m</strong>
+を用います。
+
+</p>
+
+
+<div class="formula">
+
+Re = U × 0.01 / (1.0 × 10<sup>-6</sup>)
+
+<br><br>
+
+<strong>Re = 10,000U</strong>
+
+</div>
+
+
+<p>
+
+ここで、Uの単位は[m/s]です。
+
+本装置では、グローブバルブを用いて
+流量を変化させることで流速 U を変化させ、
+レイノルズ数を調整します。
+
+</p>
+
+
+<h3>ストローハル数（St）</h3>
+
+<p>
+
+ストローハル数 St とは、
+流れの中での振動や渦の放出などの
+周期的現象を表す無次元数です。
+
+流速 U、円柱直径 d、渦の放出周波数 f を用いて、
+次式で表されます。
+
+</p>
+
+
+<div class="formula">
+
+St = fd / U
+
+</div>
+
+
+<p>
+
+円柱まわりのカルマン渦では、
+ストローハル数はおよそ
+<strong>St ≈ 0.2</strong>
+となります。
+
+</p>
+
+
+<div class="formula">
+
+f = St × U / d
+
+</div>
+
+
+<p>
+
+今回の実験で使用する円柱
+<strong>d = 0.01 m</strong>
+の場合、
+
+</p>
+
+
+<div class="formula">
+
+f = 0.2 × U / 0.01
+
+<br><br>
+
+<strong>f = 20U [Hz]</strong>
+
+</div>
+
+
+<p>
+
+流速 U が大きくなるほど、
+1秒間に放出される渦の数も増加します。
+
+</p>
+
+
+<h3>渦の大きさ</h3>
+
+<div class="formula">
+
+L = U / f
+
+</div>
+
+
+<div class="formula">
+
+L = d / St
+
+<br><br>
+
+<strong>L ≈ 5d</strong>
+
+</div>
+
+
+<p>
+
+今回の円柱直径が10 mmの場合、
+
+</p>
+
+
+<div class="formula">
+
+L ≈ 5 × 10 = <strong>50 mm</strong>
+
+</div>
+
 
 </div>
 
 </section>
 
-<section id="simulation">
 
-<h2>カルマン渦シミュレーション</h2>
+<!-- ==================================================
+     ③ 実験装置
+================================================== -->
 
-<div class="card center-content">
+<section id="setup">
+
+<h2>③ 実験装置</h2>
+
+
+<!-- ==================================================
+     EXPERIMENT PLAN
+================================================== -->
+
+<div class="card">
+
+<h3>実験装置の計画図</h3>
 
 <p>
-レイノルズ装置を再現したインタラクティブシミュレーション。
+
+下図に実験装置の全体構成を示します。
+
+ポンプによって水を循環させ、
+グローブバルブで流量を調整します。
+
+その後、流量計で流量を確認し、
+整流装置によって流れを整えます。
+
+整流された水が円柱を通過することで、
+円柱後方にカルマン渦が発生します。
+
+レーザーとパール顔料を用いることで、
+発生したカルマン渦を可視化します。
+
 </p>
 
-<br>
 
-<iframe src="simulation.html"></iframe>
+<div class="plan-container">
+
+<img
+src="experiment-plan.png"
+class="plan-img"
+alt="カルマン渦実験装置の計画図">
+
+<p class="plan-caption">
+
+図：カルマン渦実験装置の計画図
+
+</p>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     FLOW SYSTEM
+================================================== -->
+
+<div class="card">
+
+<h3>水の循環経路</h3>
+
+<div class="flow-system">
+
+<div class="flow-box">
+バケツ
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+ポンプ
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+グローブバルブ
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+流量計
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+整流装置
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+水槽
+</div>
+
+<div class="flow-arrow">
+→
+</div>
+
+<div class="flow-box">
+バケツ
+</div>
+
+</div>
+
+
+<div class="highlight">
+
+水を循環させることで、
+連続した流れを作りながらカルマン渦を観察します。
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     REQUIRED APPARATUS
+================================================== -->
+
+<div class="card">
+
+<h3>必要な実験装置</h3>
+
+<p>
+
+本実験では、以下の装置・器具を使用して
+水流を発生・調整し、円柱後方に発生する
+カルマン渦を可視化します。
+
+</p>
+
+
+<div class="apparatus-list">
+
+
+<!-- ==================================================
+     1. 水槽
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="tank.jpg"
+class="apparatus-image"
+alt="水槽">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>1. 水槽</h3>
+
+<p>
+
+水を流し、円柱後方に発生するカルマン渦を
+観察するための透明な観察部です。
+
+透明な水槽を使用することで、
+レーザーによって照らされたパール顔料の動きを
+外部から観察することができます。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+水流を通過させ、
+円柱後方のカルマン渦を観察する。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     2. 整流装置
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="sponge.jpg"
+class="apparatus-image"
+alt="整流装置">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>2. 整流装置</h3>
+
+<p>
+
+整流装置には、
+<strong>モルトフィルターとハニカムボード</strong>を使用します。
+
+</p>
+
+<p>
+
+<strong>モルトフィルター：</strong>
+
+流れの圧力損失を生じさせ、
+流れの速度のばらつきを抑えます。
+
+</p>
+
+<p>
+
+<strong>ハニカムボード：</strong>
+
+横方向の流れを抑え、
+水をまっすぐ流すことで一様流を形成します。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+円柱に入る前の水流を整え、
+できるだけ一様な流れを作る。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     3. 円柱
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="retort stand.jpg"
+class="apparatus-image"
+alt="円柱">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>3. 円柱</h3>
+
+<p>
+
+水槽内に設置し、
+水流を遮ることで円柱後方に
+カルマン渦を発生させます。
+
+</p>
+
+<p>
+
+円柱の直径はレイノルズ数に関係するため、
+実験条件に応じて適切な直径を使用します。
+
+</p>
+
+
+<div class="formula">
+
+Re = Ud / ν
+
+</div>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+流れを分離させ、
+円柱後方にカルマン渦を形成する。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     4. パール顔料
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="pearl-pigment.png"
+class="apparatus-image"
+alt="パール顔料">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>4. パール顔料</h3>
+
+<p>
+
+水に少量混ぜて使用する
+トレーサー粒子です。
+
+</p>
+
+<p>
+
+パール顔料が水の流れに追従し、
+レーザー光を反射することで、
+水の流れの形状を目視できるようにします。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+レーザー光を反射し、
+目に見えない水流とカルマン渦を可視化する。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     5. レーザー
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="laser.jpg"
+class="apparatus-image"
+alt="レーザー">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>5. レーザー</h3>
+
+<p>
+
+水中のパール顔料にレーザー光を照射します。
+
+パール顔料が光を反射することで、
+粒子の動きが明るく見えるようになります。
+
+</p>
+
+<p>
+
+これにより、
+円柱後方のカルマン渦の形状と流れの動きを
+観察することができます。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+パール顔料を照らし、
+カルマン渦を光学的に可視化する。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     6. ポンプ
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="pump.jpg"
+class="apparatus-image"
+alt="ポンプ">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>6. ポンプ</h3>
+
+<p>
+
+実験装置内の水を循環させるために使用します。
+
+ポンプによってバケツから水を送り出し、
+水槽を通過した水を再び循環させます。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+実験装置内に連続した水流を発生させる。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     7. 流量計
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="ryuuryoukei.jpg"
+class="apparatus-image"
+alt="流量計">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>7. 流量計</h3>
+
+<p>
+
+実験装置内を流れる水の流量を計測します。
+
+得られた流量から流速を求め、
+レイノルズ数を計算するために使用します。
+
+</p>
+
+
+<div class="formula">
+
+Re = Ud / ν
+
+</div>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+流量を測定し、
+実験条件となる流速とレイノルズ数を確認する。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     8. グローブバルブ
+================================================== -->
+
+<div class="apparatus-card">
+
+<div>
+
+<img
+src="hose.jpg"
+class="apparatus-image"
+alt="グローブバルブ">
+
+</div>
+
+
+<div class="apparatus-info">
+
+<h3>8. グローブバルブ</h3>
+
+<p>
+
+バルブ内部の流路断面積を調節することで、
+実験装置を流れる水の流量を調節します。
+
+</p>
+
+<p>
+
+バルブを調整することで流速を変化させ、
+レイノルズ数を実験条件に合わせて調整します。
+
+</p>
+
+
+<div class="apparatus-purpose">
+
+<strong>役割：</strong>
+
+水の流量を調整し、
+カルマン渦を観察するための流れの条件を設定する。
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<!-- ==================================================
+     APPARATUS RELATIONSHIP
+================================================== -->
+
+<div class="card">
+
+<h3>各装置の関係</h3>
+
+<p>
+
+それぞれの装置は、以下のような役割を持って
+カルマン渦の観察を行います。
+
+</p>
+
+
+<div class="term">
+
+<strong>ポンプ：</strong>
+
+水を循環させる。
+
+</div>
+
+
+<div class="term">
+
+<strong>グローブバルブ：</strong>
+
+流量を調整する。
+
+</div>
+
+
+<div class="term">
+
+<strong>流量計：</strong>
+
+流量を測定し、流速を確認する。
+
+</div>
+
+
+<div class="term">
+
+<strong>整流装置：</strong>
+
+水流を整え、一様流を形成する。
+
+</div>
+
+
+<div class="term">
+
+<strong>円柱：</strong>
+
+流れを分離させ、カルマン渦を発生させる。
+
+</div>
+
+
+<div class="term">
+
+<strong>パール顔料：</strong>
+
+水流の動きを光で確認できるようにする。
+
+</div>
+
+
+<div class="term">
+
+<strong>レーザー：</strong>
+
+パール顔料を照らして流れを可視化する。
+
+</div>
+
+
+<div class="term">
+
+<strong>水槽：</strong>
+
+カルマン渦が発生する観察部となる。
+
+</div>
 
 </div>
 
 </section>
+
+
+<!-- ==================================================
+     ④ 実験方法
+================================================== -->
+
+<section id="method">
+
+<h2>④ 実験方法</h2>
+
+
+<div class="card">
+
+<h3>実験手順</h3>
+
+
+<ol class="method-steps">
+
+
+<li>
+
+図のように、
+水槽、整流装置、円柱、ポンプ、
+流量計、グローブバルブを接続し、
+水が循環する実験装置を組み立てる。
+
+</li>
+
+
+<li>
+
+円柱を水槽内の所定の位置に設置する。
+
+</li>
+
+
+<li>
+
+ポンプを作動させ、
+水を実験装置内で循環させる。
+
+</li>
+
+
+<li>
+
+グローブバルブを調整し、
+流量計を確認しながら水の流量を調整する。
+
+</li>
+
+
+<li>
+
+流量から流速 U を求め、
+
+<strong>Re = Ud / ν</strong>
+
+を用いてレイノルズ数を計算する。
+
+</li>
+
+
+<li>
+
+円柱の直径と流速を調整し、
+カルマン渦を観察するための
+適切なレイノルズ数に設定する。
+
+</li>
+
+
+<li>
+
+少量のパール顔料を水槽内に加え、
+水の流れに乗せる。
+
+</li>
+
+
+<li>
+
+レーザーをパール顔料に照射し、
+反射した光によって
+円柱周辺および円柱後方の流れを可視化する。
+
+</li>
+
+
+<li>
+
+円柱後方に形成されるカルマン渦を観察し、
+写真や動画として記録する。
+
+</li>
+
+
+<li>
+
+流量、流速、レイノルズ数および
+渦の発生状態を記録し、
+実験条件とカルマン渦の関係を確認する。
+
+</li>
+
+
+</ol>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+     ⑤ 実験動画
+================================================== -->
 
 <section id="video">
 
-<h2>実験動画</h2>
+<h2>⑤ 実験動画</h2>
+
 
 <div class="card center-content">
 
-<video controls class="video-player">
-<source src="Video Karman.mov" type="video/mp4">
+<video
+controls
+class="video-player">
+
+<source
+src="Karman Vortex Video.mov"
+type="video/mp4">
+
+お使いのブラウザでは動画を再生できません。
+
 </video>
 
 </div>
 
 </section>
+
+
+<!-- ==================================================
+     ⑥ 結果
+================================================== -->
+
 <section id="results">
 
-<h2>実験結果</h2>
+<h2>⑥ 結果</h2>
+
 
 <div class="card">
 
-<table>
-
-<tr>
-<th>流速</th>
-<th>観察結果</th>
-</tr>
-
-<tr>
-<td>低流速</td>
-<td>渦の発生なし</td>
-</tr>
-
-<tr>
-<td>中流速</td>
-<td>カルマン渦を確認</td>
-</tr>
-
-<tr>
-<td>高流速</td>
-<td>明確な渦列を形成</td>
-</tr>
-
-</table>
-
-</div>
-
-</section>
-
-<section id="gallery">
-
-<h2>実験写真</h2>
-
-<div class="gallery">
-<img src="setup.jpg">
-<img src="vortex1.jpg">
-<img src="vortex2.jpg">
-</div>
-
-</section>
-
-<section id="conclusion">
-
-<h2>まとめ</h2>
-
-<div class="card">
+<div class="result-box">
 
 <p>
-本研究ではレイノルズ装置と円柱モデルを用いてカルマン渦の発生を観察した。
 
-実験およびシミュレーションを通じて、流体が障害物を通過する際に発生する渦の特徴を理解することができた。
+実験結果をここに掲載します。
 
-また、カルマン渦は橋梁や煙突、送電線など様々な工学分野で重要な現象であることを確認した。
+<br><br>
+
+流量・流速・レイノルズ数・
+カルマン渦の発生状態などを
+実験後に追加してください。
+
 </p>
 
 </div>
 
+</div>
+
 </section>
 
+
+<!-- ==================================================
+     ⑦ 写真
+================================================== -->
+
+<section id="gallery">
+
+<h2>⑦ 写真</h2>
+
+
+<div class="card">
+
+<div class="gallery">
+
+
+<img
+src="setup.jpg"
+alt="実験装置">
+
+
+<img
+src="vortex1.jpg"
+alt="カルマン渦">
+
+
+<img
+src="vortex2.jpg"
+alt="カルマン渦">
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+     FOOTER
+================================================== -->
+
 <footer>
+
 <h3>カルマン渦研究プロジェクト</h3>
+
 <p>Open Campus 2026</p>
+
 </footer>
 
+
 </body>
+
 </html>
