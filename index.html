@@ -589,6 +589,27 @@ h4{
     border-radius:15px;
 }
 
+.video-block{
+
+    margin-bottom:40px;
+}
+
+.video-block:last-child{
+
+    margin-bottom:0;
+}
+
+.video-caption{
+
+    text-align:center;
+
+    color:#666;
+
+    font-size:14px;
+
+    margin-top:10px;
+}
+
 
 /* ==================================================
    RESULT
@@ -1886,7 +1907,9 @@ alt="グローブバルブ">
 <h2>⑤ 実験動画</h2>
 
 
-<div class="card center-content">
+<div class="card">
+
+<div class="video-block">
 
 <video
 controls
@@ -1899,6 +1922,37 @@ type="video/mp4">
 お使いのブラウザでは動画を再生できません。
 
 </video>
+
+<p class="video-caption">
+
+動画①：実験装置全体および水流の様子
+
+</p>
+
+</div>
+
+
+<div class="video-block">
+
+<video
+controls
+class="video-player">
+
+<source
+src="Karman Vortex Video 2.mov"
+type="video/mp4">
+
+お使いのブラウザでは動画を再生できません。
+
+</video>
+
+<p class="video-caption">
+
+動画②：レーザー可視化によるカルマン渦発生の様子
+
+</p>
+
+</div>
 
 </div>
 
@@ -1916,17 +1970,49 @@ type="video/mp4">
 
 <div class="card">
 
-<div class="result-box">
+<p>
+
+グローブバルブを用いて流量を調整し、
+レイノルズ数を <strong>Re = 110</strong> に設定した条件のもとで
+実験を行いました。
+
+</p>
 
 <p>
 
-実験結果をここに掲載します。
+レーザーを適切な位置に配置し、
+水中のパール顔料に照射したところ、
+円柱後方の流れを明瞭に可視化することができました。
 
-<br><br>
+</p>
 
-流量・流速・レイノルズ数・
-カルマン渦の発生状態などを
-実験後に追加してください。
+<p>
+
+その結果、円柱後方において
+左右交互に渦が放出される様子が確認され、
+
+<strong>カルマン渦が形成されていることを確認しました。</strong>
+
+</p>
+
+
+<div class="video-block">
+
+<video
+controls
+class="video-player">
+
+<source
+src="Karman Vortex Result.mov"
+type="video/mp4">
+
+お使いのブラウザでは動画を再生できません。
+
+</video>
+
+<p class="video-caption">
+
+動画：Re = 110 におけるカルマン渦発生の様子
 
 </p>
 
